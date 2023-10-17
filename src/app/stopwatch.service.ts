@@ -3,10 +3,11 @@ import {
   Observable,
   timer,
   BehaviorSubject,
-  Subscription
+  Subscription,
+  fromEvent
 } from "rxjs";
+import { debounceTime, map, buffer, filter } from 'rxjs/operators';
 
-import { map } from "rxjs/operators";
 import { StopWatch } from "./stopwatch.interface";
 
 @Injectable({
@@ -67,18 +68,23 @@ export class StopwatchService {
 
   /**
  * Checks if there were two consecutive clicks within 300ms and stops the time
- */
+ */  
   waitCount(): void {
-    if(!this.#secondClick){
-      this.#secondClick = true
-      this.#actualDelay = Date.now();
-      return
+    const mouse$ = fromEvent(document, 'click')
+    const buff$ = mouse$.pipe(
+      debounceTime(300),
+    )
+    const click$ = mouse$.pipe(
+      buffer(buff$),
+      map(list => {
+        return list.length;
+      }),
+      filter(x => x === 2),
+    )
+    click$.subscribe(() => 
+          this.stopCount()
+        );
     }
-    if(Date.now() - this.#actualDelay <= this.#delayTime){
-      this.stopCount()
-    }
-    this.#secondClick = false
-  }
 
   /**
  * Format time to display properly
@@ -91,7 +97,6 @@ export class StopwatchService {
     rest = seconds % 3600;
     const minutes = Math.floor(rest / 60);
     rest = seconds % 60;
-    this.#secondClick = false
 
     return {
       hours: this.convertToNumberString(hours),
