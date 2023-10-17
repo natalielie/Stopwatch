@@ -1,0 +1,37 @@
+//@import "../node_modules/@angular/material/prebuilt-themes/purple-green.css";
+@use '@angular/material' as mat;
+
+@include mat.core();
+
+$my-primary: mat.define-palette(mat.$indigo-palette, 500);
+$my-accent: mat.define-palette(mat.$pink-palette, A200, A100, A400);
+
+$my-theme: mat.define-light-theme((
+ color: (
+   primary: $my-primary,
+   accent: $my-accent,
+ ),
+ typography: mat.define-typography-config(),
+ density: 0,
+));
+
+@include mat.all-component-themes($my-theme);
+
+@import url('https://fonts.googleapis.com/css?family=Source+Code+Pro');
+*{
+  font-family: 'Source Code Pro', monospace;
+    
+}
+
+body{
+  background-color: #dfe1e6;
+  min-width: 350px;
+  min-height: 200px;
+  position: relative;
+}
+
+.stopwatch-title{
+    position: absolute;
+    left: 42%;
+    font-size: 42px;
+}
