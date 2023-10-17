@@ -1,12 +1,18 @@
 import { Injectable } from "@angular/core";
 import {
+  pipe,
   Observable,
   timer,
   BehaviorSubject,
   Subscription,
   fromEvent
 } from "rxjs";
-import { debounceTime, map, buffer, filter } from 'rxjs/operators';
+import { 
+  debounceTime, 
+  map, 
+  buffer, 
+  filter 
+} from 'rxjs/operators';
 
 import { StopWatch } from "./stopwatch.interface";
 
@@ -19,9 +25,6 @@ import { StopWatch } from "./stopwatch.interface";
  */
 export class StopwatchService {
   readonly #initialTime = 0;
-  #secondClick = false;
-  #actualDelay = 0;
-  #delayTime = 300;
 
   #timer$: BehaviorSubject<number> = new BehaviorSubject(
     this.#initialTime
@@ -33,32 +36,43 @@ export class StopwatchService {
   constructor() {}
 
   /**
- * Get the stopwatch Observable
+ * Get the stopwatch Observable #timer$
  *
  * @param StopWatch stopwatch interface
  */
   public get stopWatch$(): Observable<StopWatch> {
     return this.#timer$.pipe(
-      map((seconds: number): StopWatch => this.secondsToStopWatch(seconds))
+      map((seconds: number): StopWatch => this.displayStopwatch(seconds))
     );
   }
 
+  /**
+ * Starts the stopwatch from the initial time or the last stopped count
+ */ 
   startCount(): void {
     if (this.#isRunning) {
       return;
     }
-    this.#timerSubscription = timer(0, 1000) // Timer, so that the first emit is instantly (interval waits until the period is over for the first emit)
+    // Timer, so that the first emit is instantly (interval waits until the period is over for the first emit)
+    this.#timerSubscription = timer(0, 1000) 
       .pipe(map((value: number): number => value + this.#lastStopedTime))
-      .subscribe(this.#timer$); // each emit of the Observable will result in a emit of the BehaviorSubject timer$
+      // each emit of the Observable will result in a emit of the BehaviorSubject timer$
+      .subscribe(this.#timer$); 
     this.#isRunning = true;
   }
 
+/**
+ * Stops the stopwatch on the current count
+ */ 
   stopCount(): void {
     this.#lastStopedTime = this.#timer$.value;
     this.#timerSubscription.unsubscribe();
     this.#isRunning = false;
   }
 
+/**
+ * Resets the stopwatch to 0
+ */ 
   resetStopwatch(): void {
     this.#timerSubscription.unsubscribe();
     this.#lastStopedTime = this.#initialTime;
@@ -68,6 +82,10 @@ export class StopwatchService {
 
   /**
  * Checks if there were two consecutive clicks within 300ms and stops the time
+ * 
+ * @param mouse$ check if there was a click
+ * @param buff$ wait 300ms before emission
+ * @param click$ check if there were 2 clicks
  */  
   waitCount(): void {
     const mouse$ = fromEvent(document, 'click')
@@ -91,21 +109,19 @@ export class StopwatchService {
  *
  * @param seconds used to convert seconds to format hh:mm:ss
  */
-  private secondsToStopWatch(seconds: number): StopWatch {
-    let rest = seconds;
+  private displayStopwatch(seconds: number): StopWatch {
     const hours = Math.floor(seconds / 3600);
-    rest = seconds % 3600;
-    const minutes = Math.floor(rest / 60);
-    rest = seconds % 60;
+    const minutes = Math.floor(seconds % 3600 / 60);
+    const secs = seconds % 60;
 
     return {
-      hours: this.convertToNumberString(hours),
-      minutes: this.convertToNumberString(minutes),
-      seconds: this.convertToNumberString(rest),
+      hours: this.convertToString(hours),
+      minutes: this.convertToString(minutes),
+      seconds: this.convertToString(secs),
     };
   }
 
-  private convertToNumberString(value: number): string {
+  private convertToString(value: number): string {
     return `${value < 10 ? "0" + value : value}`;
   }
 
