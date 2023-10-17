@@ -53,7 +53,7 @@ export class StopwatchService {
     if (this.#isRunning) {
       return;
     }
-    // Timer, so that the first emit is instantly (interval waits until the period is over for the first emit)
+    // timer for emitting each value every second
     this.#timerSubscription = timer(0, 1000) 
       .pipe(map((value: number): number => value + this.#lastStopedTime))
       // each emit of the Observable will result in a emit of the BehaviorSubject timer$

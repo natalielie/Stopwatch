@@ -13,7 +13,7 @@ import { StopwatchService } from "./stopwatch.service";
   styleUrls: ["./app.component.scss"]
 })
 export class AppComponent implements OnDestroy {
-  // a property that implements Stopwatch interface
+  // a stopwatch property of Stopwatch interface
   public stopwatch!: StopWatch;
   // a subject that emits a truthy value in the ngOnDestroy lifecycle hook
   destroy$: Subject<boolean> = new Subject<boolean>();
